@@ -1,1 +1,49 @@
-Secure computation using Fully Homomorphic Encryption based on Lattice Based Cryptography.
+**Secure computation using Fully Homomorphic Encryption based on Lattice Based Cryptography.**
+
+### Motivation
+
+Often times, it is more convenient and cheaper to lease compute infrastructure than to build it. On the other hand, sensitive data
+cannot always be handled by leased infrastructure due to legal requirements or other risk factors. In order
+to get the best of both worlds, it would be ideal if the data could still be processed by a third party without being readable by the third party.
+Fully Homomorphic Encryption is one way to satisfy these needs.
+
+
+### Fully Homomorphic Encryption
+
+Fully Homomorphic Encryption (FHE) allows for a server to perform computations (additions and multiplications) on encrypted data.
+When the result of the calculations is sent back to the client after decryption, the client will have the same results as if the computations
+had been performed on unencrypted data.
+This feature allows for use cases where the client doesn't trust the server which performs the computations.
+
+#### Lattigo
+
+This project uses the Lattigo (https://github.com/ldsec/lattigo) Go library in order to implement FHE on a set of data sent
+to the server for computation. In particular, it uses lattigo/bfv.
+
+
+### Usage
+
+This project consists of the server, performing computations on the encrypted data, and the client encrypting the data
+and uploading it to the server. The client and the server communicate over gRPC.
+Both, the client and the server can be compiled using `make` command. `make server` creates server binary in the build dir,
+while `make client` creates client binary in the build dir. When the server binary is executed, the server will start listening
+for incoming connections on the default port. When client binary is executed, it will connect the server on the default port and
+send it instructions and data.
+
+For demonstration purposes, the client can send a set of encrypted vectors to server. The server will store each vector in a file.
+Upon request from the client, the server will perform an addition on stored vectors and return the encrypted result to the client.
+The client will then decrypt the result and display it.
+This shows that it is possible to use a server on untrusted infrastructure in order to execute computation without revealing the data
+on which the computation is performed.
+
+In order for the client to be able to successfully execute encryption/decryption, it will need to generate the keypair.
+The client can be instructed to generate keypair by using the `g` switch like this `client -g`.
+Once generated, the keypair will be used for the encryption/decryption so it is important not to lose it.
+
+By using the `client -w` command, one can instruct the client to construct a new encrypted vector and
+push it to the server for storage.
+
+In order to receive the sum of all encrypted vectors stored on a server, one can execute `client -e`.
+
+
+

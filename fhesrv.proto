@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package fhe;
+
+service Fhesrv {
+  rpc EvalFiles (EvalRequest) returns (EvalReply) {}
+  rpc UploadFile (UploadRequest) returns (UploadReply) {}
+}
+
+message EvalRequest{
+  bytes request = 1;
+  int64 fromtimestamp = 2;
+  int64 totimestamp = 3;
+}
+
+message EvalReply{
+  string message = 1;
+  bytes response = 2;
+}
+
+message UploadRequest{
+  bytes file = 1;
+  string filename = 2;
+}
+
+message UploadReply{
+  string message = 1;
+}

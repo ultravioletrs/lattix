@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  fhe-server:
+    image: uv-consult/fhe-server:latest
+    container_name: fhe-server
+    restart: on-failure
+    environment:
+      FHESERVER_PORT=:50051
+      FHESERVER_FILES_DIR=/tmp/
+      FHESERVER_TOKEN=123
+    ports:
+      - 50051:50051
