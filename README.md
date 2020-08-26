@@ -45,5 +45,31 @@ push it to the server for storage.
 
 In order to receive the sum of all encrypted vectors stored on a server, one can execute `client -e`.
 
+#### Configuration
+
+It is possible to change port on which server listens to incoming connection as well as the token required for server to authorize operation.
+Server reads it's settings from environment variables, while client reads it's settings from the `config.toml` file which should be
+present in the same directory where the client binary resides.
+
+##### Server configuration
+
+Server accepts its configuration parameters via environment variables.
+
+| variable        | description                                                                               | default   |
+|-----------------|-------------------------------------------------------------------------------------------|-----------|
+| SERVER_TOKEN    | Token string that needs to be supplied by client for operation to be authorized by server | 123       |
+| SERVER_PORT     | IP and Port on which the server listens for incoming connections                          | :50051    |
+| SERVER_FILE_DIR | The directory in which the incoming data will be stored                                   | /tmp      |
+
+##### Client configuration
+
+Client reads it's configuration from the `config.toml` file which should be present in the same dir from which the binary is run.
+`config-example.toml` in examples directory shows the format of the configuration file.
+
+| variable        | description                                                                               | default         |
+|-----------------|-------------------------------------------------------------------------------------------|-----------------|
+| token           | Token string that needs to be supplied by client for operation to be authorized by server | 123             |
+| fhe_server      | IP and Port on which the server listens for incoming connections                          | 127.0.0.1:50051 |
+
 
 
