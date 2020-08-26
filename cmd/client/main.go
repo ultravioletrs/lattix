@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/ldsec/lattigo/bfv"
 	"github.com/spf13/viper"
+	"log"
 )
 
 const (
@@ -28,17 +29,18 @@ func main() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
 	viper.AddConfigPath(".")
-	viper.SetDefault("FheServer", FheServer)
-	viper.SetDefault("Token", Token)
+	viper.SetEnvPrefix("client")
+	viper.SetDefault("fhe_server", FheServer)
+	viper.SetDefault("token", Token)
 	err := viper.ReadInConfig()
 	if err != nil {
-
+		log.Fatalf("Error while reading config file: %s", err)
 	}
 	fmt.Println("starting client")
 	flag.Parse()
 	params := bfv.DefaultParams[bfv.PN13QP218]
 	params.T = 0x3ee0001
-	c := fhe.NewClient(viper.GetString("FheServer"), viper.GetString("Token"))
+	c := fhe.NewClient(viper.GetString("fhe_server"), viper.GetString("token"))
 	if gKeys {
 		fmt.Println("generating keys")
 		c.GenKeys(params)
@@ -51,4 +53,5 @@ func main() {
 		fmt.Println("evaluating files Grpc")
 		c.EvalReq(params)
 	}
+	fmt.Println("client finished")
 }
