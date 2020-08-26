@@ -25,6 +25,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
+	log.Println("server started")
 	fhe.RegisterFhesrvServer(s, fhe.NewServer(c.FilesDir, "gob", c.Token))
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
