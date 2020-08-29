@@ -8,6 +8,7 @@ import (
 	"github.com/ldsec/lattigo/bfv"
 	"github.com/spf13/viper"
 	"log"
+	"strconv"
 )
 
 const (
@@ -16,12 +17,12 @@ const (
 )
 
 var gKeys bool
-var wFiles bool
+var wData bool
 var evalFiles bool
 
 func init() {
 	flag.BoolVar(&gKeys, "g", false, "generates new keys")
-	flag.BoolVar(&wFiles, "w", false, "writes new files")
+	flag.BoolVar(&wData, "w", false, "writes new data")
 	flag.BoolVar(&evalFiles, "e", false, "evaluates files")
 }
 
@@ -45,9 +46,18 @@ func main() {
 		fmt.Println("generating keys")
 		c.GenKeys(params)
 	}
-	if wFiles {
-		fmt.Println("uploading files")
-		c.UploadFile(params)
+	if wData {
+		vals := flag.Args()
+		var data []uint64
+		for _, val := range vals {
+			u, err := strconv.ParseUint(val, 10, 64)
+			if err != nil {
+				log.Fatalf("Invalid parameter: %s", err)
+			}
+			data = append(data, u)
+		}
+		fmt.Println("writing data ", data)
+		c.Write(params, data...)
 	}
 	if evalFiles {
 		fmt.Println("evaluating files Grpc")

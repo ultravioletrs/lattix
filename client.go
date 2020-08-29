@@ -55,7 +55,7 @@ func (cl *Client) EvalReq(params *bfv.Parameters) {
 	decResult(params, &inr.Res)
 }
 
-func (cl *Client) UploadFile(params *bfv.Parameters) {
+func (cl *Client) Write(params *bfv.Parameters, values ...uint64) {
 	conn, err := grpc.Dial(cl.serverUrl, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -69,9 +69,8 @@ func (cl *Client) UploadFile(params *bfv.Parameters) {
 	enc := bfv.NewEncryptorFromPk(params, publicKey)
 	encoder := bfv.NewEncoder(params)
 
-	data := []uint64{2, 3, 4}
 	filePlaintext := bfv.NewPlaintext(params)
-	encoder.EncodeUint(data, filePlaintext)
+	encoder.EncodeUint(values, filePlaintext)
 	FilesCiphertext := enc.EncryptNew(filePlaintext)
 	b := bytes.Buffer{}
 	gobEncoder := gob.NewEncoder(&b)
