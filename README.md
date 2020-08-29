@@ -40,7 +40,7 @@ In order for the client to be able to successfully execute encryption/decryption
 The client can be instructed to generate keypair by using the `g` switch like this `client -g`.
 Once generated, the keypair will be used for the encryption/decryption so it is important not to lose it.
 
-By using the `client -w` command, one can instruct the client to construct a new encrypted vector and
+By using the `client -w` command followed by a set of integers, e.g. `client -w 324 54 66`, one can instruct the client to construct a new encrypted vector and
 push it to the server for storage.
 
 In order to receive the sum of all encrypted vectors stored on a server, one can execute `client -e`.
@@ -70,6 +70,14 @@ Client reads it's configuration from the `config.toml` file which should be pres
 |-----------------|-------------------------------------------------------------------------------------------|-----------------|
 | token           | Token string that needs to be supplied by client for operation to be authorized by server | 123             |
 | fhe_server      | IP and Port on which the server listens for incoming connections                          | 127.0.0.1:50051 |
+
+##### Client command flags
+
+`client -g` generetes new keypair used for encrytion/decryption on client side.
+
+`client -w a b c ...` where a, b, c... are integers instructs client to create vector a,b,c... and send it to server.
+
+`client -e` instructs server to perform evaluation on all stored data, fetches the result, decrypts it and shows it to user.
 
 
 
