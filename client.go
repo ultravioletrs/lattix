@@ -3,6 +3,7 @@ package fhe
 import (
 	"bytes"
 	"context"
+	"encoding/csv"
 	"encoding/gob"
 	"fmt"
 	"github.com/ldsec/lattigo/bfv"
@@ -10,6 +11,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -55,7 +58,49 @@ func (cl *Client) EvalReq(params *bfv.Parameters) {
 	decResult(params, &inr.Res)
 }
 
-func (cl *Client) Write(params *bfv.Parameters, values ...uint64) {
+// WriteFromFile writes to server multiple vectors stored in a csv file with each vector being one row in a file.
+func (cl *Client) WriteFromFile(params *bfv.Parameters, filename string) error {
+	var data [][]uint64
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	r := csv.NewReader(file)
+	rows, err := r.ReadAll()
+	if err != nil {
+		return err
+	}
+	for _, row := range rows {
+		var dataRow []uint64
+		for _, val := range row {
+			if strings.Trim(val, " ") == "" {
+				dataRow = append(dataRow, 0)
+				continue
+			}
+			u, err := strconv.ParseUint(val, 10, 64)
+			if err != nil {
+				return err
+			}
+			dataRow = append(dataRow, u)
+		}
+		data = append(data, dataRow)
+	}
+	return cl.WriteMulti(params, data)
+}
+
+// WriteMulti writes multiple vectors to server.
+func (cl *Client) WriteMulti(params *bfv.Parameters, data [][]uint64) error {
+	for _, dataRow := range data {
+		err := cl.Write(params, dataRow...)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Write writes supplied vector to server.
+func (cl *Client) Write(params *bfv.Parameters, values ...uint64) error {
 	conn, err := grpc.Dial(cl.serverUrl, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -76,16 +121,12 @@ func (cl *Client) Write(params *bfv.Parameters, values ...uint64) {
 	gobEncoder := gob.NewEncoder(&b)
 	err = gobEncoder.Encode(FilesCiphertext)
 	if err != nil {
-		os.Exit(1)
+		return err
 	}
-	res, err := c.UploadFile(ctx, &UploadRequest{
+	_, err = c.UploadFile(ctx, &UploadRequest{
 		File: b.Bytes(),
 	})
-	if err != nil {
-		fmt.Println("Fatal error ", err.Error())
-		os.Exit(1)
-	}
-	fmt.Println("done ", res)
+	return err
 }
 
 func (cl *Client) GenKeys(params *bfv.Parameters) {
