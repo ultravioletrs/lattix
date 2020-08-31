@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -20,12 +21,18 @@ var gKeys bool
 var wData bool
 var wFiles bool
 var evalFiles bool
+var fromTimestamp int64
+var toTimestamp int64
+var returnElements string
 
 func init() {
 	flag.BoolVar(&gKeys, "g", false, "generates new keys")
 	flag.BoolVar(&wData, "w", false, "writes new data")
-	flag.BoolVar(&wFiles, "f", false, "writes new data read from csv files")
+	flag.BoolVar(&wFiles, "c", false, "writes new data read from csv files")
 	flag.BoolVar(&evalFiles, "e", false, "evaluates files")
+	flag.Int64Var(&fromTimestamp, "f", 0, "set from timestamp")
+	flag.Int64Var(&toTimestamp, "t", 0, "set to timestamp")
+	flag.StringVar(&returnElements, "r", "", "set comma separated elements to be returned")
 }
 
 func main() {
@@ -74,12 +81,12 @@ func main() {
 		}
 	}
 	if evalFiles {
-		fmt.Println("Evaluating files Grpc")
-		res, err := c.EvalReq(params)
+		fmt.Println("Evaluating files on server")
+		res, err := c.EvalReq(params, fromTimestamp, toTimestamp)
 		if err != nil {
 			log.Fatalf("An error occured while evaluate request: %s", err)
 		}
-		positions := flag.Args()
+		positions := strings.Split(returnElements, ",")
 		for _, position := range positions {
 			pos, err := strconv.ParseInt(position, 10, 64)
 			if err != nil {

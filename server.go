@@ -60,7 +60,7 @@ func (s *Server) EvalFiles(ctx context.Context, in *EvalRequest) (*EvalReply, er
 		fmt.Println("Fatal error while handling decode", err.Error())
 		os.Exit(1)
 	}
-	s.eval(&inr.Params, &inr.Res)
+	s.eval(&inr.Params, &inr.Res, in.Fromtimestamp, in.Totimestamp)
 	encoder.Encode(&inr.Res)
 	return &EvalReply{
 		Message:  fmt.Sprintf("Result for period from: %d to: %d", in.Fromtimestamp, in.Totimestamp),
@@ -81,9 +81,8 @@ func (s *Server) UploadFile(ctx context.Context, in *UploadRequest) (*UploadRepl
 	}, nil
 }
 
-func (s *Server) eval(params *bfv.Parameters, res *bfv.Ciphertext) *bfv.Ciphertext {
+func (s *Server) eval(params *bfv.Parameters, res *bfv.Ciphertext, fromTimestamp, toTimestamp int64) *bfv.Ciphertext {
 	var files []int64
-	//TODO take only files within a range
 	evaluator := bfv.NewEvaluator(params)
 	filepath.Walk(s.filesDir, func(p string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -98,7 +97,9 @@ func (s *Server) eval(params *bfv.Parameters, res *bfv.Ciphertext) *bfv.Cipherte
 		if err != nil {
 			return nil
 		}
-		files = append(files, i)
+		if i >= fromTimestamp && i <= toTimestamp {
+			files = append(files, i)
+		}
 		return nil
 	})
 	for _, file := range files {

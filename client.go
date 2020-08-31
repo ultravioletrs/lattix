@@ -29,7 +29,7 @@ func NewClient(serverUrl, token string) *Client {
 }
 
 // EvalReq sends evaluation request to server, decrypts result and returns it
-func (cl *Client) EvalReq(params *bfv.Parameters) ([]uint64, error) {
+func (cl *Client) EvalReq(params *bfv.Parameters, fromTimestamp, toTimestamp int64) ([]uint64, error) {
 	conn, err := grpc.Dial(cl.serverUrl, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -39,20 +39,24 @@ func (cl *Client) EvalReq(params *bfv.Parameters) ([]uint64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	ctx = metadata.AppendToOutgoingContext(ctx, "token", cl.token)
 	defer cancel()
+	req, err := cl.prepareRequest(params)
+	if err != nil {
+		return nil, err
+	}
 	r, err := c.EvalFiles(ctx, &EvalRequest{
-		Request:       cl.prepareRequest(params),
-		Fromtimestamp: 1,
-		Totimestamp:   2,
+		Request:       req,
+		Fromtimestamp: fromTimestamp,
+		Totimestamp:   toTimestamp,
 	})
 	if err != nil {
-		log.Fatalf("could not eval: %v", err)
+		return nil, err
 	}
 	log.Printf("files: %s", r.GetMessage())
 	rb := bytes.NewBuffer(r.GetResponse())
 	decoder := gob.NewDecoder(rb)
 	inr := In{}
 	if err = decoder.Decode(&inr.Res); err != nil {
-		return nil, nil
+		return nil, err
 	}
 	return decResult(params, &inr.Res), nil
 }
@@ -166,7 +170,7 @@ func (cl *Client) prepareUpload(params *bfv.Parameters) []byte {
 	return b.Bytes()
 }
 
-func (cl *Client) prepareRequest(params *bfv.Parameters) []byte {
+func (cl *Client) prepareRequest(params *bfv.Parameters) ([]byte, error) {
 	resPlaintext := bfv.NewPlaintext(params)
 	secretKey, _ := readKeys()
 	encryptorSk := bfv.NewEncryptorFromSk(params, secretKey)
@@ -179,10 +183,9 @@ func (cl *Client) prepareRequest(params *bfv.Parameters) []byte {
 	}
 	err := encoder.Encode(&out)
 	if err != nil {
-		fmt.Println("Fatal error ", err.Error())
-		os.Exit(1)
+		return nil, err
 	}
-	return b.Bytes()
+	return b.Bytes(), nil
 }
 
 func readKeys() (*bfv.SecretKey, *bfv.PublicKey) {

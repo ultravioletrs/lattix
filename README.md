@@ -77,9 +77,9 @@ Client reads it's configuration from the `config.toml` file which should be pres
 
 `client -w a b c ...` where a, b, c... are integers instructs client to create vector a,b,c... and send it to server.
 
-`client -f a b c ...` where a, b, c... are paths to csv files containing each row one vector and send it to server.
+`client -c a b c ...` where a, b, c... are paths to csv files containing each row one vector and send it to server.
 
-`client -e a b c` where a, b, c... are positions of elements in a vector instructs server to perform evaluation on all stored data, fetches the result, decrypts it and shows it to user.
+`client -e -r a,b,c -f timestamp -t timestamp` where a,b,c... are positions of elements in a vector instructs server to perform evaluation on all stored data between -f and -t timestamps, fetches the result, decrypts it and shows it to user.
 
 
 
