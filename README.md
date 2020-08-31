@@ -79,7 +79,7 @@ Client reads it's configuration from the `config.toml` file which should be pres
 
 `client -f a b c ...` where a, b, c... are paths to csv files containing each row one vector and send it to server.
 
-`client -e` instructs server to perform evaluation on all stored data, fetches the result, decrypts it and shows it to user.
+`client -e a b c` where a, b, c... are positions of elements in a vector instructs server to perform evaluation on all stored data, fetches the result, decrypts it and shows it to user.
 
 
 

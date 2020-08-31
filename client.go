@@ -28,7 +28,8 @@ func NewClient(serverUrl, token string) *Client {
 	}
 }
 
-func (cl *Client) EvalReq(params *bfv.Parameters) {
+// EvalReq sends evaluation request to server, decrypts result and returns it
+func (cl *Client) EvalReq(params *bfv.Parameters) ([]uint64, error) {
 	conn, err := grpc.Dial(cl.serverUrl, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -50,12 +51,10 @@ func (cl *Client) EvalReq(params *bfv.Parameters) {
 	rb := bytes.NewBuffer(r.GetResponse())
 	decoder := gob.NewDecoder(rb)
 	inr := In{}
-	err = decoder.Decode(&inr.Res)
-	if err != nil {
-		fmt.Println("Fatal error while handling decode", err.Error())
-		os.Exit(1)
+	if err = decoder.Decode(&inr.Res); err != nil {
+		return nil, nil
 	}
-	decResult(params, &inr.Res)
+	return decResult(params, &inr.Res), nil
 }
 
 // WriteFromFile writes to server multiple vectors stored in a csv file with each vector being one row in a file.
@@ -204,10 +203,9 @@ func readKeys() (*bfv.SecretKey, *bfv.PublicKey) {
 	return &riderSk, &riderPk
 }
 
-func decResult(params *bfv.Parameters, res *bfv.Ciphertext) {
+func decResult(params *bfv.Parameters, res *bfv.Ciphertext) []uint64 {
 	encoder := bfv.NewEncoder(params)
 	riderSk, _ := readKeys()
 	decryptor := bfv.NewDecryptor(params, riderSk)
-	result := encoder.DecodeUint(decryptor.DecryptNew(res))
-	fmt.Println(result)
+	return encoder.DecodeUint(decryptor.DecryptNew(res))
 }

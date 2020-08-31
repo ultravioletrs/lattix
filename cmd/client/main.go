@@ -75,7 +75,21 @@ func main() {
 	}
 	if evalFiles {
 		fmt.Println("Evaluating files Grpc")
-		c.EvalReq(params)
+		res, err := c.EvalReq(params)
+		if err != nil {
+			log.Fatalf("An error occured while evaluate request: %s", err)
+		}
+		positions := flag.Args()
+		for _, position := range positions {
+			pos, err := strconv.ParseInt(position, 10, 64)
+			if err != nil {
+				log.Fatalf("Invalid parameter: %s", err)
+			}
+			fmt.Printf("Result at position %d: %d\n", pos, res[pos])
+		}
+		if len(positions) == 0 {
+			fmt.Println(res)
+		}
+
 	}
-	fmt.Println("Client finished")
 }
