@@ -11,9 +11,10 @@ Fully Homomorphic Encryption is one way to satisfy these needs.
 ### Fully Homomorphic Encryption
 
 Fully Homomorphic Encryption (FHE) allows for a server to perform computations (additions and multiplications) on encrypted data.
-When the result of the calculations is sent back to the client after decryption, the client will have the same results as if the computations
+When the result of the calculations is sent back to the client, after decryption, the client will have the same results as if the computations
 had been performed on unencrypted data.
 This feature allows for use cases where the client doesn't trust the server which performs the computations.
+![FHE diagram](./docs/img/fhe.png)
 
 #### Lattigo
 
